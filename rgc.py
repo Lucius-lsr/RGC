@@ -10,7 +10,9 @@ class RGC:
         self.beta = beta
         self.mu = mu
 
-    def predict(self, X):
+        self.S = None
+
+    def graph_construct(self, X):
         '''
 
         :param X: data array with size of (n x m), indicating n data with m features
@@ -37,6 +39,7 @@ class RGC:
             Y2 = Y2 + self.mu * (D - Z)
             print(np.linalg.norm(D + E - X, ord=1), np.linalg.norm(D - Z, ord=1))
             if np.linalg.norm(D + E - X, ord=1) < 1e-5 and np.linalg.norm(D - Z, ord=1) < 1e-5:
+                self.S = S
                 break
 
     @staticmethod

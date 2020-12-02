@@ -7,5 +7,5 @@ X = get_data()
 
 model = RGC(10, 1, 10, 1)
 
-model.predict(X)
+model.graph_construct(X)
 
