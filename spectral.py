@@ -117,11 +117,23 @@ def spectral(S, k):
 
     # kmeans聚类
     center, result = kmeans(H)
-    print(result)
 
     # skLearn调包结果
     sklResult = KMeans(n_clusters=k).fit(H)
-    print(sklResult.labels_)
+
+    return result[:, 0].reshape(1, -1)[0, :].astype(np.int)
+
+
+def evaluate(result, label, k):
+    correct = 0
+    for i in range(k):
+        vote = np.zeros(k)
+        idx = np.where(result == i)
+        truth = label[idx]
+        for j in truth:
+            vote[j] += 1
+        correct += np.max(vote)
+    return correct/len(result)
 
 # load data
 x, y, num_train, num_class = get_data()
@@ -131,6 +143,6 @@ model.graph_construct(x)
 
 S = model.S
 
-spectral(S, 3)
-
-print(y)
+result = spectral(S, 3)
+print(result)
+print(evaluate(result, y, 3))
