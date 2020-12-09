@@ -25,7 +25,7 @@ class RGC:
         distX = self.L2_distance(X)
         sorted_distX = self.sort_dis(distX)
         gamma = self.cal_gamma(X, sorted_distX, self.beta, self.k)
-        for _ in range(200):
+        for iter in range(200):
             D = self.update_D(E, X, Y1, Y2, self.mu, Z)
             distD = self.L2_distance(D)
             s_distD, s_idx = self.sort_dis(distD)
@@ -38,7 +38,10 @@ class RGC:
             Y1 = Y1 + self.mu * (D + E - X)
             Y2 = Y2 + self.mu * (D - Z)
             self.S = S
-            if np.linalg.norm(D + E - X, ord=1) < 1e-5 and np.linalg.norm(D - Z, ord=1) < 1e-5:
+            norm1, norm2 = np.linalg.norm(D + E - X, ord=1), np.linalg.norm(D - Z, ord=1)
+            if iter % 10 == 0:
+                print('iteration ', iter, norm1, norm2)
+            if norm1 < 1e-5 and norm2 < 1e-5:
                 break
 
     @staticmethod
