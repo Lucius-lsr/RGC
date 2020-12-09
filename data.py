@@ -24,7 +24,7 @@ def get_data(dataset_name, train_ratio):
         mat = scipy.io.loadmat(data_path)
         x = np.array(mat['X'])
         y = np.array(mat['y']).reshape(-1)
-        x, y = shuffle(x, y, random_state=66)
+        # x, y = shuffle(x, y, random_state=67)
         x_size = x.shape[0]
         num_train = int(x_size * train_ratio)
         num_class = np.max(y) - np.min(y) + 1

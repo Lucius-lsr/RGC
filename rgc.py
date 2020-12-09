@@ -39,10 +39,11 @@ class RGC:
             Y2 = Y2 + self.mu * (D - Z)
             self.S = S
             norm1, norm2 = np.linalg.norm(D + E - X, ord=1), np.linalg.norm(D - Z, ord=1)
+            self.mu *= 1.1
             if iter % 10 == 0:
                 print('iteration ', iter, norm1, norm2)
-            if norm1 < 1e-5 and norm2 < 1e-5:
-                break
+
+        pass
 
     @staticmethod
     def L2_distance(A):
@@ -160,7 +161,7 @@ class RGC:
         Z = np.dot(np.linalg.inv(2 * beta * L + mu * np.identity(L_size)), mu * D + Y2)
         return Z
 
-    def semi_classification(self, num_class, x_train, x_test, y_train):
+    def semi_classification(self, num_class, x_train, x_test, y_train, y_test):
         def lgc(gragh, y_semi):
             """
             The LGC algorithm was originally published in the following paper: Zhou, Denny, et al.
@@ -172,10 +173,14 @@ class RGC:
             :return: array with size of (n+m) as classification result
             """
             alpha = 0.99
-            n_iter = 400
-            S = gragh
+            n_iter = 100
 
-            F = np.dot(S, y_semi) * alpha + (1 - alpha) * y_semi
+            # normalize S
+            S = gragh
+            D = np.diag(np.sum(S, axis=0) ** (-0.5))
+            S = np.matmul(np.matmul(D, S), D)
+
+            F = y_semi
             for t in range(n_iter):
                 F = np.dot(S, F) * alpha + (1 - alpha) * y_semi
             y_result = np.zeros_like(F)
@@ -186,8 +191,20 @@ class RGC:
 
         num_test = x_test.shape[0]
         x_combine = np.concatenate((x_train, x_test))
-        y_combine = np.concatenate(
-            ((y_train[:, None] == np.arange(num_class)).astype(float), np.zeros((num_test, num_class))))
+        y_combine = np.concatenate((y_train, y_test))
+
+        count_dict = {}
+        for y in y_combine:
+            if y not in count_dict.keys():
+                count_dict[y] = 1
+            else:
+                count_dict[y] += 1
+        choose = [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
+        for i in range(1, 11):
+            num = count_dict[i]
+            for c in choose:
+                unlabeled.append()
+        # ((y_train[:, None] == np.arange(num_class)).astype(float), np.zeros((num_test, num_class))))
 
         self.graph_construct(x_combine)
         y_all = lgc(self.S, y_combine)
