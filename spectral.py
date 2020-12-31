@@ -2,8 +2,10 @@ import math
 
 import numpy as np
 from sklearn.cluster import KMeans
-from rgc import RGC
+from Hungarian import Hungarian
+
 from data import get_data
+from rgc import RGC
 
 
 def calLapMat(S):
@@ -38,7 +40,7 @@ def get_closest_dist(point, centroids):
         dist = L2Dist(centroids[i, :], point)
         if dist < min_dist:
             min_dist = dist
-    return min_dist**2
+    return min_dist ** 2
 
 
 def kpp_centers(data_set):
@@ -54,10 +56,10 @@ def kpp_centers(data_set):
         for i in range(n):
             d[i] = get_closest_dist(data_set[i, :], cluster_centers)  # 与最近一个聚类中心的距离
             total += d[i]
-        d = d/total
+        d = d / total
         # 选出下一个中心
         next_row = np.random.choice(np.arange(n), size=1, replace=False, p=d)
-        cluster_centers = np.insert(cluster_centers, cluster_centers.shape[0], data_set[next_row,:], axis=0)
+        cluster_centers = np.insert(cluster_centers, cluster_centers.shape[0], data_set[next_row, :], axis=0)
     return cluster_centers
 
 
@@ -106,7 +108,6 @@ def spectral(S, k):
 
     # 特征值分解
     lam, H = np.linalg.eig(L)
-
     # 取特征值最大的前k个特征向量
     H = H[:, np.argsort(lam)]
     H = H[:, :k]
@@ -121,28 +122,97 @@ def spectral(S, k):
     # skLearn调包结果
     sklResult = KMeans(n_clusters=k).fit(H)
 
-    return result[:, 0].reshape(1, -1)[0, :].astype(np.int)
+    # return result[:, 0].reshape(1, -1)[0, :].astype(np.int)
+    return sklResult.labels_
 
 
-def evaluate(result, label, k):
+def evaluatePurity(result, label, k):
+    """
+    :param result: the result of clustering 1*n
+    :param label: the true label of data 1*n
+    :param k: the number of clusters
+    :return: correctness of clustering
+    """
     correct = 0
     for i in range(k):
-        vote = np.zeros(k)
+        vote = [0] * k
         idx = np.where(result == i)
         truth = label[idx]
         for j in truth:
-            vote[j] += 1
+            vote[j - 1] += 1
         correct += np.max(vote)
-    return correct/len(result)
+    return correct / len(result)
 
-# load data
-x, y, num_train, num_class = get_data()
 
-model = RGC(10, 0.1, 1, 1)
+def evaluateAcc(result, label, k):
+    """
+    :param result: the result of clustering 1*n
+    :param label: the true label of data 1*n
+    :param k: the number of clusters
+    :return: accuracy of clustering
+    """
+    cost_matrix = np.zeros((k, k))
+    for i in range(0, len(result)):
+        cost_matrix[result[i]][label[i] - 1] += 1
+    hungarian = Hungarian(cost_matrix, is_profit_matrix=True)
+    hungarian.calculate()
+    mapping = [0] * k
+    hung_result = hungarian.get_results()
+    for r in hung_result:
+        mapping[r[0]] = r[1]
+
+    correct = 0
+    for i in range(0, len(result)):
+        if (label[i] - 1) == mapping[result[i]]:
+            correct += 1
+    return correct / len(result)
+
+
+def NMI(result, label):
+    """
+    :param result: the result of clustering 1*n
+    :param label: the true label of data 1*n
+    :return: the NMI between two clusters
+    """
+    result = result + 1
+    total = len(result)
+    A_ids = set(result)
+    B_ids = set(label)
+    MI = 0
+    eps = 1.4e-45
+    for idA in A_ids:
+        for idB in B_ids:
+            idAOccur = np.where(result == idA)
+            idBOccur = np.where(label == idB)
+            idABOccur = np.intersect1d(idAOccur, idBOccur)
+            px = 1.0*len(idAOccur[0])/total
+            py = 1.0*len(idBOccur[0])/total
+            pxy = 1.0*len(idABOccur)/total
+            MI = MI + pxy*math.log(pxy/(px*py)+eps, 2)
+    # Normalized Mutual information
+    Hx = 0
+    for idA in A_ids:
+        idAOccurCount = 1.0*len(np.where(result == idA)[0])
+        Hx = Hx - (idAOccurCount/total)*math.log(idAOccurCount/total+eps, 2)
+    Hy = 0
+    for idB in B_ids:
+        idBOccurCount = 1.0*len(np.where(label == idB)[0])
+        Hy = Hy - (idBOccurCount/total)*math.log(idBOccurCount/total+eps, 2)
+    MIhat = 2.0*MI/(Hx+Hy)
+    return MIhat
+
+
+# 加载数据
+x, y, num_train, num_class = get_data('yale', 0.5)
+
+model = RGC(5, 0.0385, 0.1, 15)
 model.graph_construct(x)
 
 S = model.S
 
-result = spectral(S, 3)
-print(result)
-print(evaluate(result, y, 3))
+result = spectral(S, num_class)
+
+# 评估聚类结果
+print('Purity: ' + str(evaluatePurity(result, y, num_class)))
+print('Accuracy: ' + str(evaluateAcc(result, y, num_class)))
+print('NMI: ' + str(NMI(result, y)))
