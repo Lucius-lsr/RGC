@@ -25,7 +25,7 @@ def L2Dist(a, b):
     """
     calculate the L2 distance between a and b
     """
-    return np.sqrt(np.sum((a - b) ** 2))
+    return np.sqrt(np.sum((np.abs(a - b)) ** 2))
 
 
 def get_closest_dist(point, centroids):
@@ -107,13 +107,14 @@ def spectral(S, k):
     L = calLapMat(S)
 
     # 特征值分解
-    lam, H = np.linalg.eig(L)
+    H, lam, V = np.linalg.svd(L)
+
     # 取特征值最大的前k个特征向量
     H = H[:, np.argsort(lam)]
     H = H[:, :k]
 
     # 行单位化
-    tmp = np.sum(H * H, axis=1).reshape(-1, 1)
+    tmp = np.sum(np.abs(H) * np.abs(H), axis=1).reshape(-1, 1)
     H = H / (tmp ** 0.5)
 
     # kmeans聚类
@@ -122,8 +123,7 @@ def spectral(S, k):
     # skLearn调包结果
     sklResult = KMeans(n_clusters=k).fit(H)
 
-    # return result[:, 0].reshape(1, -1)[0, :].astype(np.int)
-    return sklResult.labels_
+    return result[:, 0].reshape(1, -1)[0, :].astype(np.int), sklResult.labels_
 
 
 def evaluatePurity(result, label, k):
@@ -202,17 +202,24 @@ def NMI(result, label):
     return MIhat
 
 
+dataset = 'jaffe'
 # 加载数据
-x, y, num_train, num_class = get_data('yale', 0.5)
-
+x, y, num_train, num_class = get_data(dataset, 0.5)
+'''
 model = RGC(5, 0.0385, 0.1, 15)
 model.graph_construct(x)
 
 S = model.S
-
-result = spectral(S, num_class)
+np.save('jaffe.npy', S)
+'''
+S = np.load(dataset + '.npy')
+result, skResult = spectral(S, num_class)
 
 # 评估聚类结果
-print('Purity: ' + str(evaluatePurity(result, y, num_class)))
-print('Accuracy: ' + str(evaluateAcc(result, y, num_class)))
-print('NMI: ' + str(NMI(result, y)))
+print('Purity by myKMeans: ' + str(evaluatePurity(result, y, num_class)))
+print('Accuracy by myKMeans: ' + str(evaluateAcc(result, y, num_class)))
+print('NMI by myKMeans: ' + str(NMI(result, y)))
+
+print('Purity by skLearn: ' + str(evaluatePurity(skResult, y, num_class)))
+print('Accuracy by skLearn: ' + str(evaluateAcc(skResult, y, num_class)))
+print('NMI by skLearn: ' + str(NMI(skResult, y)))
