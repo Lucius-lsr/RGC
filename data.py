@@ -6,7 +6,7 @@ from sklearn.utils import shuffle
 import scipy.io
 
 
-def get_data(dataset_name, train_ratio):
+def get_data(dataset_name, train_ratio, random_state):
     # train_ratio = 0.5
     # x, y = load_iris(True)
     # x, y = shuffle(x, y, random_state=66)
@@ -24,7 +24,8 @@ def get_data(dataset_name, train_ratio):
         mat = scipy.io.loadmat(data_path)
         x = np.array(mat['X'])
         y = np.array(mat['y']).reshape(-1)
-        # x, y = shuffle(x, y, random_state=67)
+        y -= 1
+        x, y = shuffle(x, y, random_state=random_state)
         x_size = x.shape[0]
         num_train = int(x_size * train_ratio)
         num_class = np.max(y) - np.min(y) + 1
@@ -32,3 +33,4 @@ def get_data(dataset_name, train_ratio):
     except Exception as e:
         print(e)
         exit(1)
+
