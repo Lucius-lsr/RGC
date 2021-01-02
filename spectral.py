@@ -106,7 +106,7 @@ def spectral(S, k):
     # 计算拉普拉斯矩阵
     L = calLapMat(S)
 
-    # 特征值分解
+    # 奇异值分解
     H, lam, V = np.linalg.svd(L)
 
     # 取特征值最大的前k个特征向量
@@ -153,7 +153,7 @@ def evaluateAcc(result, label, k):
     """
     cost_matrix = np.zeros((k, k))
     for i in range(0, len(result)):
-        cost_matrix[result[i]][label[i] - 1] += 1
+        cost_matrix[result[i]][label[i]] += 1
     hungarian = Hungarian(cost_matrix, is_profit_matrix=True)
     hungarian.calculate()
     mapping = [0] * k
@@ -163,7 +163,7 @@ def evaluateAcc(result, label, k):
 
     correct = 0
     for i in range(0, len(result)):
-        if (label[i] - 1) == mapping[result[i]]:
+        if label[i] == mapping[result[i]]:
             correct += 1
     return correct / len(result)
 
@@ -202,17 +202,14 @@ def NMI(result, label):
     return MIhat
 
 
-dataset = 'jaffe'
+dataset = 'coil20'
 # 加载数据
-x, y, num_train, num_class = get_data(dataset, 0.5)
-'''
+x, y, num_train, num_class = get_data(dataset, 0.5, 0)
+
 model = RGC(5, 0.0385, 0.1, 15)
 model.graph_construct(x)
 
 S = model.S
-np.save('jaffe.npy', S)
-'''
-S = np.load(dataset + '.npy')
 result, skResult = spectral(S, num_class)
 
 # 评估聚类结果
