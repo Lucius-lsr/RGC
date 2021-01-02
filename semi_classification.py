@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from rgc import RGC
-from data import get_data
+from data import get_data, get_separated_data
 import numpy as np
 
 from sklearn.tree import DecisionTreeClassifier
@@ -11,19 +11,10 @@ from sklearn.svm import SVC
 
 
 def rgc_acc(alpha, beta, mu, train_ratio, random_state, dataset):
-    x, y, num_train, num_class = get_data(dataset, train_ratio, random_state)
-    print('data shape: ', x.shape)
-    print('number of train data: ', num_train)
-    print('number of class: ', num_class)
+    x_train, x_test, y_train, y_test, num_class = get_separated_data(dataset, train_ratio, random_state)
 
     # load model
     model = RGC(k=5, alpha=alpha, beta=beta, mu=mu)
-
-    # divide
-    x_train = x[:num_train]
-    x_test = x[num_train:]
-    y_train = y[:num_train]
-    y_test = y[num_train:]
 
     # predict
     y_pred = model.semi_classification(num_class, x_train, x_test, y_train)
@@ -32,17 +23,17 @@ def rgc_acc(alpha, beta, mu, train_ratio, random_state, dataset):
     return acc
 
 
-for ds in ['coil20','jaffe','yale']:
-    print('dataset is ', ds)
+for ds in ['jaffe', 'yale', 'coil20']:
+    print('dataset is', ds)
     for tr in [0.1, 0.3, 0.5]:
         print('training ratio is {}'.format(tr))
-        acc_all = 0
+        acc_all = []
         for rs in range(10):
-            acc = rgc_acc(alpha=0.0385, beta=0.01, mu=15, train_ratio=tr, random_state=rs, dataset=ds)
-            acc_all += acc
-        acc_all /= 10
-        print('average acc is ', acc_all)
-
+            acc = rgc_acc(alpha=0.0385, beta=0.1, mu=15, train_ratio=tr, random_state=rs, dataset=ds)
+            acc_all.append(acc)
+        acc_all = np.array(acc_all)
+        print(acc_all)
+        print('average acc is ', acc_all.mean(), '+-', acc_all.std())
 
 # cls = OneVsRestClassifier(SVC(kernel='linear'))
 # cls.fit(x_train, y_train)
