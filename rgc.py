@@ -12,10 +12,10 @@ class RGC:
 
         self.S = None
 
-    def graph_construct(self, X):
+    def graph_construct(self, X, verbose=False):
         """
-
         :param X: data array with size of (n x m), indicating n data with m features
+        :param verbose: show verbose
         """
         Y1 = np.zeros_like(X)
         Y2 = np.zeros_like(X)
@@ -40,8 +40,10 @@ class RGC:
             self.S = S
             norm1, norm2 = np.linalg.norm(D + E - X, ord=1), np.linalg.norm(D - Z, ord=1)
             self.mu *= 1.1
-            # if iter % 10 == 0:
-            #     print('iteration ', iter, norm1, norm2)
+            if iter % 10 == 0 and verbose:
+                print('iteration ', iter, norm1, norm2)
+            if norm1 < 1e-6 and norm2 < 1e-6:
+                break
 
 
     @staticmethod
@@ -58,7 +60,6 @@ class RGC:
     @staticmethod
     def sort_dis(distX):
         """
-
         :param distX: an (n x n) symmetric distance matrix
         :return: sorted distance matrix and sorted index
         """
@@ -69,7 +70,6 @@ class RGC:
     @staticmethod
     def cal_gamma(X, sorted_distX, beta, k):
         """
-
         :param X: matrix X with size of (n x m)
         :param sorted_distX: sorted distance matrix with size of (n x n)
         :param beta: hyper-parameter beta
@@ -87,7 +87,6 @@ class RGC:
     @staticmethod
     def update_D(E, X, Y1, Y2, mu, Z):
         """
-
         :param E: matrix E with size of (n x m)
         :param X: matrix X with size of (n x m)
         :param Y1: matrix Y1 with size of (n x m)
@@ -110,7 +109,6 @@ class RGC:
     @staticmethod
     def update_E(D, X, Y1, mu, alpha):
         """
-
         :param D: matrix D with size of (n x m)
         :param X: matrix X with size of (n x m)
         :param Y1: matrix Y1 with size of (n x m)
@@ -128,7 +126,6 @@ class RGC:
     @staticmethod
     def update_S(X, sorted_distX, sorted_idx, k):
         """
-
         :param X:  matrix X with size of (n x m)
         :param sorted_distX: sorted distance matrix with size of (n x n)
         :param sorted_idx: distance sorting index, the first of each row is always the row number, with size of (n x n)
@@ -148,7 +145,6 @@ class RGC:
     @staticmethod
     def update_Z(L, beta, mu, D, Y2):
         """
-
         :param L: matrix L with size of (n x m)
         :param beta: hyper-parameter beta
         :param mu: hyper-parameter mu

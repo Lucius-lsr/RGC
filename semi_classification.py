@@ -1,13 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from rgc import RGC
-from data import get_data, get_separated_data
+from data import get_separated_data
 import numpy as np
-
-from sklearn.tree import DecisionTreeClassifier
-
-from sklearn.multiclass import OneVsRestClassifier
-from sklearn.svm import SVC
 
 
 def rgc_acc(alpha, beta, mu, train_ratio, random_state, dataset):
@@ -19,42 +14,11 @@ def rgc_acc(alpha, beta, mu, train_ratio, random_state, dataset):
     # predict
     y_pred = model.semi_classification(num_class, x_train, x_test, y_train)
     acc = np.mean(y_pred == y_test)
-
     return acc
 
 
-# acc_all = []
-# for rs in range(10,30):
-#     acc = rgc_acc(alpha=0.0385, beta=0.1, mu=15, train_ratio=0.1, random_state=rs, dataset='yale')
-#     acc_all.append(acc)
-# acc_all = np.array(acc_all)
-# print(acc_all)
-# print('average acc is ', acc_all.mean(), '+-', acc_all.std())
-# exit()
-#
-# for ds in ['jaffe', 'yale']:
-#     print('dataset is', ds)
-#     for tr in [0.1, 0.3, 0.5]:
-#         print('training ratio is {}'.format(tr))
-#         acc_all = []
-#         for rs in range(10):
-#             acc = rgc_acc(alpha=0.0385, beta=0.1, mu=15, train_ratio=tr, random_state=rs, dataset=ds)
-#             acc_all.append(acc)
-#         acc_all = np.array(acc_all)
-#         print(acc_all)
-#         print('average acc is ', acc_all.mean(), '+-', acc_all.std())
+dataset = 'jaffe'
+train_ratio = 0.5
+acc = rgc_acc(alpha=0.0385, beta=0.1, mu=15, train_ratio=train_ratio, random_state=66, dataset=dataset)
+print('accuracy is ', acc)
 
-for rd in [66,666,6666]:
-    for ds in ['coil20']:
-        print('dataset is', ds)
-        for tr in [0.1, 0.3, 0.5]:
-            print('training ratio is {}'.format(tr))
-            acc = rgc_acc(alpha=0.0385, beta=0.1, mu=15, train_ratio=tr, random_state=rd, dataset=ds)
-            print(acc)
-
-# cls = OneVsRestClassifier(SVC(kernel='linear'))
-# cls.fit(x_train, y_train)
-# output = cls.predict(x_test)
-# target = y_test
-# acc2 = np.mean(target == output)
-# print('standard ACC:', acc2)

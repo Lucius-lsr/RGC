@@ -204,7 +204,7 @@ def NMI(result, label):
 
 dataset = 'coil20'
 # 加载数据
-x, y, num_train, num_class = get_data(dataset, 0.5, 0)
+x, y, num_class = get_data(dataset, 0)
 
 model = RGC(5, 0.0385, 0.1, 15)
 model.graph_construct(x)
