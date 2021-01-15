@@ -23,17 +23,34 @@ def rgc_acc(alpha, beta, mu, train_ratio, random_state, dataset):
     return acc
 
 
-for ds in ['jaffe', 'yale', 'coil20']:
-    print('dataset is', ds)
-    for tr in [0.1, 0.3, 0.5]:
-        print('training ratio is {}'.format(tr))
-        acc_all = []
-        for rs in range(10):
-            acc = rgc_acc(alpha=0.0385, beta=0.1, mu=15, train_ratio=tr, random_state=rs, dataset=ds)
-            acc_all.append(acc)
-        acc_all = np.array(acc_all)
-        print(acc_all)
-        print('average acc is ', acc_all.mean(), '+-', acc_all.std())
+# acc_all = []
+# for rs in range(10,30):
+#     acc = rgc_acc(alpha=0.0385, beta=0.1, mu=15, train_ratio=0.1, random_state=rs, dataset='yale')
+#     acc_all.append(acc)
+# acc_all = np.array(acc_all)
+# print(acc_all)
+# print('average acc is ', acc_all.mean(), '+-', acc_all.std())
+# exit()
+#
+# for ds in ['jaffe', 'yale']:
+#     print('dataset is', ds)
+#     for tr in [0.1, 0.3, 0.5]:
+#         print('training ratio is {}'.format(tr))
+#         acc_all = []
+#         for rs in range(10):
+#             acc = rgc_acc(alpha=0.0385, beta=0.1, mu=15, train_ratio=tr, random_state=rs, dataset=ds)
+#             acc_all.append(acc)
+#         acc_all = np.array(acc_all)
+#         print(acc_all)
+#         print('average acc is ', acc_all.mean(), '+-', acc_all.std())
+
+for rd in [66,666,6666]:
+    for ds in ['coil20']:
+        print('dataset is', ds)
+        for tr in [0.1, 0.3, 0.5]:
+            print('training ratio is {}'.format(tr))
+            acc = rgc_acc(alpha=0.0385, beta=0.1, mu=15, train_ratio=tr, random_state=rd, dataset=ds)
+            print(acc)
 
 # cls = OneVsRestClassifier(SVC(kernel='linear'))
 # cls.fit(x_train, y_train)

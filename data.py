@@ -51,19 +51,21 @@ def get_separated_data(dataset_name, train_ratio, random_state):
 
         x_size = x.shape[0]
         each_class_begin = [0]
-        for i in range(x_size-1):
-            assert y[i] <= y[i+1]
-            if y[i] < y[i+1]:
-                each_class_begin.append(i+1)
-        each_class_begin.append(x_size-1)
+        for i in range(x_size - 1):
+            assert y[i] <= y[i + 1]
+            if y[i] < y[i + 1]:
+                each_class_begin.append(i + 1)
+        each_class_begin.append(x_size - 1)
 
         train_idx = []
         train_num_per_class = int(x_size * train_ratio / num_class)
 
-        for i in range(num_class):
-            train_idx += random.sample(list(range(each_class_begin[i], each_class_begin[i+1])), train_num_per_class)
+        random.seed(random_state)
 
-        train_idx += random.sample(list(range(x_size)), int(x_size*train_ratio)-len(train_idx))
+        for i in range(num_class):
+            train_idx += random.sample(list(range(each_class_begin[i], each_class_begin[i + 1])), train_num_per_class)
+
+        train_idx += random.sample(list(range(x_size)), int(x_size * train_ratio) - len(train_idx))
         train_idx = list(set(train_idx))
 
         test_idx = [i for i in range(x_size) if i not in train_idx]
